@@ -3,22 +3,25 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
-from .permissions import HasApiPermission
-from .models import User
+from django.contrib.auth import get_user_model
+
+from .permissions import HasApiPermission  # we'll create this next
+
+User = get_user_model()
 
 
 class MeView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        perms = [
-            p for p in request.user.get_all_permissions()
-            if p.startswith("api.")
-        ]
+        perms = list(request.user.get_all_permissions())
+        groups = list(request.user.groups.values_list("name", flat=True))
 
         return Response({
+            "id": request.user.id,
             "username": request.user.username,
-            "role": request.user.role,
+            "email": request.user.email,
+            "groups": groups,
             "permissions": perms,
         })
 
@@ -28,5 +31,5 @@ class UserManagementView(APIView):
     required_permissions = ["api.can_manage_users"]
 
     def get(self, request):
-        users = User.objects.all().values("id", "username", "role")
+        users = User.objects.all().values("id", "username", "email")
         return Response({"users": list(users)})

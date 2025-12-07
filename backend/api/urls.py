@@ -1,6 +1,5 @@
-# api/urls.py
 from django.urls import path
-from .views import MeView, UserManagementView  # remove ReportsView for now
+from .views import MeView, UserManagementView
 
 urlpatterns = [
     path("me/", MeView.as_view(), name="me"),
